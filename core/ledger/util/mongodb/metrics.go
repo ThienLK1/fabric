@@ -17,7 +17,7 @@ var (
 		Subsystem:    "",
 		Name:         "processing_time",
 		Help:         "Time taken in seconds for the function to complete request to MongoDB",
-		LabelNames:   []string{"database", "function_name", "result"},
+		LabelNames:   []string{"collection", "function_name", "result"},
 		StatsdFormat: "%{#fqname}.%{collection}.%{function_name}",
 	}
 )
@@ -36,5 +36,6 @@ func (s *stats) observeProcessingTime(startTime time.Time, colName, functionName
 	s.apiProcessingTime.With(
 		"collection", colName,
 		"function_name", functionName,
+		"result", result,
 	).Observe(time.Since(startTime).Seconds())
 }

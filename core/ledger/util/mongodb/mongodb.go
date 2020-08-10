@@ -10,6 +10,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+	"unicode/utf8"
+
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,11 +23,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap/zapcore"
-	"net/url"
-	"strconv"
-	"strings"
-	"time"
-	"unicode/utf8"
 )
 
 var logger = flogging.MustGetLogger("mongodb")
@@ -276,6 +277,12 @@ func (dbclient *MongoDatabase) ReadDoc(id string) (*MongoDoc, string, error) {
 
 	res := client.Database(dbName).Collection(colName).FindOne(ctx, bson.M{"_id": id})
 	if res.Err() != nil {
+		logger.Errorf("res.Err() : [%s]", res.Err())
+		if strings.Contains(res.Err().Error(), "no documents in result") {
+			logger.Debugf("Database Name : [%s] Collection Name : [%s] Document not found", dbclient.DatabaseName, dbclient.CollectionName)
+			return nil, "", nil
+		}
+
 		return nil, "", res.Err()
 	}
 
